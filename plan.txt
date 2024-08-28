@@ -1,0 +1,13 @@
+REQUIREMENT:
+A backend for Market place with Bidding and Auction in django, Django ninja for api and django-dramatiq for task queue
+
+Think of user journey:
+-> There are user which who register in our web app .
+-> User can add there items
+-> User can raise Auction .
+-> Other user can view active Auction and Bid on them.
+
+
+
+
+
