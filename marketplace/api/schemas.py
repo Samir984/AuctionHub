@@ -7,13 +7,13 @@ class ItemSchema(Schema):
     name: str
     image:str
     description: str
-    starting_price: Decimal
     created_at: datetime
     owner_id: int
 
 class AuctionSchema(Schema):
     id: int
-    item: ItemSchema
+    item_id: int
+    auction_price:Decimal
     start_time: datetime
     end_time: datetime
 
