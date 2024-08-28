@@ -1,25 +1,35 @@
-from ninja import Schema
+from pydantic import BaseModel
+from typing import Optional
 from datetime import datetime
-from decimal import Decimal
 
-class ItemSchema(Schema):
+class ItemSchema(BaseModel):
     id: int
     name: str
-    image:str
     description: str
     created_at: datetime
-    owner_id: int
+    owner: User  
+   
 
-class AuctionSchema(Schema):
+    class Config:
+        orm_mode = True
+
+class AuctionSchema(BaseModel):
     id: int
-    item_id: int
-    auction_price:Decimal
+    item: int
+    owner: int  
+    auction_price: float
     start_time: datetime
     end_time: datetime
 
-class BidSchema(Schema):
+    class Config:
+        orm_mode = True
+
+class BidSchema(BaseModel):
     id: int
-    auction_id: int
-    bidder_id: int
-    bid_amount: Decimal
-    bid_time: datetime
+    auction: int
+    bidder_id: int 
+    bid_amount: float
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
