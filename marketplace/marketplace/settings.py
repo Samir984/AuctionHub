@@ -38,9 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 'django_dramatiq',
+    'api',
     'ninja',
-    # 'api',
+    # 'django_dramatiq',
 ]
 
 MIDDLEWARE = [
