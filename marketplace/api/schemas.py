@@ -1,4 +1,5 @@
 from ninja import Schema
+from decimal import Decimal
 from typing import Optional
 from datetime import datetime
 from django.contrib.auth.models import User
@@ -17,9 +18,7 @@ class ItemSchema(Schema):
 
 class AuctionSchema(Schema):
     id: int
-    item: int
-    owner: int  
-    auction_price: float
+    auction_price: Decimal
     start_time: datetime
     end_time: datetime
 
@@ -29,7 +28,7 @@ class BidSchema(Schema):
     id: int
     auction: int
     bidder_id: int 
-    bid_amount: float
+    bid_amount: Decimal
     created_at: datetime
 
   
