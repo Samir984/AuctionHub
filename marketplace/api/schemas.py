@@ -10,6 +10,7 @@ class ItemSchema(Schema):
     name: str
     description: str
     created_at: datetime
+    # owner:User
   
 
 

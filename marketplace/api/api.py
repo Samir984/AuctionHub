@@ -15,33 +15,36 @@ def message(request):
 @api.get("/items/", response=list[ItemSchema])
 def list_items(request):
     items = Item.objects.all()
+    print(items[0].owner.id)
     return items
 
 @api.post("/items/", response=ItemSchema)
-def create_item(request, name: str, description: str, created_at: datetime):
+def create_item(request, name: str, description: str):
     # Creating an item with the owner's user ID
+    print(name,description,request,request.user,"\n\n\n")
     item = Item.objects.create(
-        owner_id=request.user,
+        owner=request.user,
         name=name,
         description=description,
-        created_at=created_at,
     )
     return item
 
 @api.get("/auctions/", response=list[AuctionSchema])
 def list_auctions(request):
     auctions = Auction.objects.all()
+    print(auctions[0].item.name,"\n\n\n\n")
     return auctions
 
 @api.post("/auctions/", response=AuctionSchema)
-def create_auction(request, item_id: int, auction_price: float, start_time: datetime, end_time: datetime):
+def create_auction(request,item:int, auction_price: float, start_time: datetime, end_time: datetime):
     # Fetch the item to ensure it exists
-    item = get_object_or_404(Item, id=item_id)
+    print(item,auction_price,start_time,end_time,"/n/n/n/n")
+    item=get_object_or_404(Item,item=item)
 
     # Create an auction
     auction = Auction.objects.create(
-        item_id=item,
-        owner_id=request.user,
+        item=item,
+        owner=request.user,
         auction_price=auction_price,
         start_time=start_time,
         end_time=end_time
@@ -50,7 +53,7 @@ def create_auction(request, item_id: int, auction_price: float, start_time: date
 
 @api.get("/bids/{auction_id}/", response=list[BidSchema])
 def list_bids(request, auction_id: int):
-    bids = Bid.objects.filter(auction_id=auction_id)
+    bids = Bid.objects.get(auction_id=auction_id)
     return bids
 
 
