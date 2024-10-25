@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "debug_toolbar",
     "corsheaders",
     "rest_framework",
+    "django_filters",
     "marketplace",
 ]
 
@@ -147,13 +148,15 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
 ]
 
-# Simple jwt package setting
+# Simple jwt package Setting
 # https://django-rest-framework-simplejwt.readthedocs.io/en/latest/index.html
 
 REST_FRAMEWORK = {
+    "COERCE_DECIMAL_TO_STRING": False,
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-    )
+    ),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
 }
 
 
@@ -164,6 +167,11 @@ SIMPLE_JWT = {
     # "BLACKLIST_AFTER_ROTATION": False,
     # "UPDATE_LAST_LOGIN": False,
 }
+
+
+# Celery  Setting
+
+# CELERY_BROKER_URL = "redis://127.0.0.6369"
 
 
 # Custome auth path

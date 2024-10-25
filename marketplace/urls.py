@@ -1,15 +1,22 @@
 from django.urls import path, include
 from . import views
-from rest_framework import routers, request
+from rest_framework_nested import routers
 
 router = routers.DefaultRouter()
 router.register("items", views.ItemViewSet, basename="items")
 router.register("auctions", views.AuctionViewSet, basename="auctions")
 
+# Corrected Nested Router Setup
+auction_router = routers.NestedDefaultRouter(router, "auctions", lookup="auction")
+auction_router.register("bid", views.BidViewSet, basename="auction-bid")
 
 urlpatterns = [
     path("register/", views.RegisterView.as_view(), name="register"),
     path("me/", views.MyDetailView.as_view(), name="my_detail"),
-    path("change_password/", views.ChangePasswordView.as_view(), name="change_password"),
+    path(
+        "change_password/", views.ChangePasswordView.as_view(), name="change_password"
+    ),
 ]
-urlpatterns += router.urls
+
+# Include router URLs
+urlpatterns += router.urls + auction_router.urls

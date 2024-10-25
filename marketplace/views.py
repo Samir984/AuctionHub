@@ -2,9 +2,14 @@ from django.shortcuts import render, HttpResponse
 from .serializer import (
     ItemSerializer,
     AuctionSerializer,
+    AuctionUpdateSerializer,
     RegisterSerializer,
     ChangePasswordSerializer,
+    BidSerializer,
 )
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.pagination import PageNumberPagination
 from .models import Item, Auction, Bid, User
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import views
@@ -26,7 +31,7 @@ class MyDetailView(generics.RetrieveAPIView):
     serializer_class = RegisterSerializer
 
     def get_object(self):
-        return self.request.user
+        return self.request.userme
 
 
 class ChangePasswordView(generics.CreateAPIView):
@@ -44,10 +49,41 @@ class ChangePasswordView(generics.CreateAPIView):
 
 
 class ItemViewSet(ModelViewSet):
+    permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = Item.objects.all()
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ["owner"]
+    search_fields = ["title"]
+    ordering_fields = ["created_at"]
+    pagination_class = PageNumberPagination
+
     serializer_class = ItemSerializer
 
 
 class AuctionViewSet(ModelViewSet):
-    queryset = Auction.objects.all()
-    serializer_class = AuctionSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    queryset = Auction.objects.prefetch_related("item").all()
+
+    def get_serializer_class(self):
+        if self.request.method in ["PUT", "PATCH"]:
+            return AuctionUpdateSerializer
+
+        return AuctionSerializer
+
+    def get_serializer_context(self):
+        return {"request": self.request}
+
+    def get_serializer_context(self):
+        return {"request": self.request}
+
+
+class BidViewSet(ModelViewSet):
+    http_method_names = ["post", "get"]
+
+    serializer_class = BidSerializer
+
+    def get_queryset(self):
+        return Bid.objects.filter(auction_id=self.kwargs["auction_pk"])
+
+    def get_serializer_context(self):
+        return {"request": self.request, "auction_id": self.kwargs["auction_pk"]}

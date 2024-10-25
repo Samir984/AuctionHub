@@ -51,7 +51,7 @@ class Item(models.Model):
 
 
 class Auction(models.Model):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    item = models.OneToOneField(Item, on_delete=models.CASCADE)
     starting_bid = models.DecimalField(max_digits=10, decimal_places=2)
     current_bid = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
@@ -59,10 +59,10 @@ class Auction(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     ends_at = models.DateTimeField()
     seller = models.ForeignKey(User, on_delete=models.CASCADE)
-    highest_bidder = models.ForeignKey(
-        User,
+    highest_bid = models.OneToOneField(
+        "Bid",
         on_delete=models.SET_NULL,
-        related_name="highest_bidder",
+        related_name="highest_bid",
         null=True,
         blank=True,
     )
@@ -71,16 +71,15 @@ class Auction(models.Model):
         return self.ends_at > timezone.now()
 
     def __str__(self):
-        return self.title
+        return self.item.title
 
 
 class Bid(models.Model):
-    auction_item = models.ForeignKey(
-        Auction, on_delete=models.CASCADE, related_name="bids"
+    auction = models.OneToOneField(
+        Auction, on_delete=models.CASCADE, related_name="bid"
     )
     bidder = models.ForeignKey(User, on_delete=models.CASCADE)
     bid_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    bid_time = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
