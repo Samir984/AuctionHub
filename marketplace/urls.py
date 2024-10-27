@@ -13,6 +13,7 @@ auction_router.register("bid", views.BidViewSet, basename="auction-bid")
 urlpatterns = [
     path("register/", views.RegisterView.as_view(), name="register"),
     path("me/", views.MyDetailView.as_view(), name="my_detail"),
+    path("test/", views.Test.as_view(), name="test"),
     path(
         "change_password/", views.ChangePasswordView.as_view(), name="change_password"
     ),

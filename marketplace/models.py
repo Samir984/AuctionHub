@@ -6,6 +6,8 @@ from django.utils import timezone
 # Custom User Manager
 class CustomerUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
+        print("Create normal user custome manager running\n\n\n\n\n")
+
         if not email:
             raise ValueError("The Email field must be set ")
         email = self.normalize_email(email)
@@ -15,6 +17,7 @@ class CustomerUserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
+        print("Create superuser custome manager running\n\n\n\n\n")
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
 
@@ -28,16 +31,16 @@ class CustomerUserManager(BaseUserManager):
 
 # Custom User Model
 class User(AbstractUser):
-    username = None  # Removing username field
-    email = models.EmailField(unique=True)  # Setting email as unique
+    username = None
+    email = models.EmailField(unique=True)
 
-    USERNAME_FIELD = "email"  # Set email to be used as the unique identifier
-    REQUIRED_FIELDS = []  # Removes username from required fields
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []
 
-    objects = CustomerUserManager()  # Specify the custom manager
+    objects = CustomerUserManager()
 
     def __str__(self):
-        return self.get_full_name()  # Return email for object representation
+        return self.get_full_name()
 
 
 class Item(models.Model):
@@ -52,20 +55,11 @@ class Item(models.Model):
 
 class Auction(models.Model):
     item = models.OneToOneField(Item, on_delete=models.CASCADE)
-    starting_bid = models.DecimalField(max_digits=10, decimal_places=2)
-    current_bid = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
-    )
+    price = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
     ends_at = models.DateTimeField()
     seller = models.ForeignKey(User, on_delete=models.CASCADE)
-    highest_bid = models.OneToOneField(
-        "Bid",
-        on_delete=models.SET_NULL,
-        related_name="highest_bid",
-        null=True,
-        blank=True,
-    )
+    expired=models.BooleanField(default=False)
 
     def is_active(self):
         return self.ends_at > timezone.now()

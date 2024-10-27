@@ -7,6 +7,7 @@ from .serializer import (
     ChangePasswordSerializer,
     BidSerializer,
 )
+from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.pagination import PageNumberPagination
@@ -19,6 +20,7 @@ from rest_framework.permissions import (
     AllowAny,
     IsAuthenticated,
 )
+import time
 
 
 class RegisterView(generics.CreateAPIView):
@@ -35,7 +37,7 @@ class MyDetailView(generics.RetrieveAPIView):
 
 
 class ChangePasswordView(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     serializer_class = ChangePasswordSerializer
 
     def get_serializer_context(self):
@@ -49,8 +51,8 @@ class ChangePasswordView(generics.CreateAPIView):
 
 
 class ItemViewSet(ModelViewSet):
-    permission_classes = [IsAuthenticatedOrReadOnly]
-    queryset = Item.objects.all()
+    # permission_classes = [IsAuthenticatedOrReadOnly]
+    queryset = Item.objects.select_related("owner").all()
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ["owner"]
     search_fields = ["title"]
@@ -61,17 +63,14 @@ class ItemViewSet(ModelViewSet):
 
 
 class AuctionViewSet(ModelViewSet):
-    permission_classes = [IsAuthenticatedOrReadOnly]
-    queryset = Auction.objects.prefetch_related("item").all()
+    # permission_classes = [IsAuthenticatedOrReadOnly]
+    queryset = Auction.objects.prefetch_related("item", "bid").filter(expired=False)
 
     def get_serializer_class(self):
         if self.request.method in ["PUT", "PATCH"]:
             return AuctionUpdateSerializer
 
         return AuctionSerializer
-
-    def get_serializer_context(self):
-        return {"request": self.request}
 
     def get_serializer_context(self):
         return {"request": self.request}
@@ -87,3 +86,14 @@ class BidViewSet(ModelViewSet):
 
     def get_serializer_context(self):
         return {"request": self.request, "auction_id": self.kwargs["auction_pk"]}
+
+
+count = 0
+
+
+class Test(views.APIView):
+    def get(self, request):
+        global count
+        count += 1
+        time.sleep(3)
+        return Response(f"hello {count}")

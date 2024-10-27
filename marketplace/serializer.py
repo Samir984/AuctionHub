@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.shortcuts import get_object_or_404
 from . import models
 
 
@@ -36,10 +37,68 @@ class ItemSerializer(serializers.ModelSerializer):
         fields = ["id", "title", "description", "created_at", "owner"]
 
 
+class BidSerializer(serializers.ModelSerializer):
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        auction_id = self.context["auction_id"]
+        new_bid = validated_data["bid_amount"]
+
+        previous_bid = models.Bid.objects.filter(auction_id=auction_id).first()
+        auction = get_object_or_404(models.Auction, pk=auction_id)
+
+        if previous_bid is None:
+            # # when bid amount of bidder is greater or  equal to price
+            print("previous_bid is none\n\n")
+            if auction.price <= validated_data["bid_amount"]:
+                print("auction price less or = to bid_amount \n\n")
+
+                item_to_transfer = auction.item
+                item_to_transfer.owner = user
+                item_to_transfer.save()
+                auction.expired = True
+                auction.save()
+
+        elif previous_bid is not None:
+            #  reject the current bid
+            print("previous vide is present\n\n")
+            if previous_bid.bid_amount >= new_bid:
+                print("previous bid amount in greater then new bid\n")
+                raise serializers.ValidationError(
+                    {"detail": "Bid amount must be higher than the current bid.\n"}
+                )
+                # delete prevous bid
+            elif previous_bid.bid_amount <= new_bid and new_bid < auction.price:
+                print("in between about \n\n")
+                previous_bid.delete()
+
+            else:
+                print("new bid is highter then price")
+                # delete previous bid
+                previous_bid.delete()
+                # transfer item to new owner from previous owner
+                item_to_transfer = auction.item
+                item_to_transfer.owner = user
+                item_to_transfer.save()
+                # delete current auction
+                auction.expired = True
+                auction.save()
+
+        return models.Bid.objects.create(
+            auction_id=auction_id, bidder=user, **validated_data
+        )
+
+    class Meta:
+        model = models.Bid
+        fields = ["id", "auction", "bid_amount", "bidder", "created_at"]
+        extra_kwargs = {"auction": {"read_only": True}, "bidder": {"read_only": True}}
+
+
 class AuctionSerializer(serializers.ModelSerializer):
     current_bid = serializers.DecimalField(
         max_digits=10, decimal_places=2, read_only=True
     )
+    bid = BidSerializer(read_only=True)
     item = ItemSerializer(read_only=True)
     item_id = serializers.PrimaryKeyRelatedField(
         queryset=models.Item.objects.all(), write_only=True
@@ -72,7 +131,8 @@ class AuctionSerializer(serializers.ModelSerializer):
             "item_id",
             "item",
             "seller",
-            "starting_bid",
+            "price",
+            "bid",
             "current_bid",
             "created_at",
             "ends_at",
@@ -85,32 +145,65 @@ class AuctionUpdateSerializer(serializers.ModelSerializer):
         model = models.Auction
         fields = [
             "id",
-            "starting_bid",
+            "price",
             "ends_at",
         ]
 
+    # def create(self, validated_data):
+    #     user = self.context["request"].user
+    #     auction_id = self.context["auction_id"]
+    #     new_bid = validated_data["bid_amount"]
 
-class BidSerializer(serializers.ModelSerializer):
+    #     previous_bid = models.Bid.objects.filter(auction_id=auction_id).first()
+    #     auction = get_object_or_404(models.Auction, pk=auction_id)
 
-    def create(self, validated_data):
-        user = self.context["request"].user
-        auction_id = self.context["auction_id"]
+    #     if previous_bid is None:
+    #         # # when bid amount of bidder is greater or  equal to price
+    #         print("previous_bid is none\n\n")
+    #         if auction.price <= validated_data["bid_amount"]:
+    #             print("auction price less or = to bid_amount \n\n")
 
-        current_bid = models.Bid.objects.filter(auction_id=auction_id).first()
+    #             item_to_transfer = auction.item
+    #             item_to_transfer.owner = user
+    #             item_to_transfer.save()
+    #             auction.expired = True
+    #             auction.save()
+    #             return models.Bid.objects.create(
+    #                 auction_id=auction_id, bidder=user, **validated_data
+    #             )
+    #         else:
+    #             print("auction price greater or = to bid_amount \n\n")
+    #             return models.Bid.objects.create(
+    #                 auction_id=auction_id, bidder=user, **validated_data
+    #             )
 
-        if current_bid is not None:
-            if current_bid.bid_amount >= validated_data["bid_amount"]:
-                raise serializers.ValidationError(
-                    {"detail": "Bid amount must be higher than the current bid."}
-                )
-            else:
-                current_bid.delete()
-
-        return models.Bid.objects.create(
-            auction_id=auction_id, bidder=user, **validated_data
-        )
-
-    class Meta:
-        model = models.Bid
-        fields = ["id", "auction", "bid_amount", "bidder", "created_at"]
-        extra_kwargs = {"auction": {"read_only": True}, "bidder": {"read_only": True}}
+    #     elif previous_bid is not None:
+    #         #  reject the current bid
+    #         print("previous vide is present\n\n")
+    #         if previous_bid.bid_amount >= new_bid:
+    #             print("previous bid amount in greater then new bid\n")
+    #             raise serializers.ValidationError(
+    #                 {"detail": "Bid amount must be higher than the current bid.\n"}
+    #             )
+    #             # delete prevous bid
+    #         elif previous_bid.bid_amount <= new_bid and new_bid < auction.price:
+    #             print("in between about \n\n")
+    #             previous_bid.delete()
+    #             #  transer item  to new_owner
+    #             return models.Bid.objects.create(
+    #                 auction_id=auction_id, bidder=user, **validated_data
+    #             )
+    #         else:
+    #             print("new bid is highter then price")
+    #             # delete previous bid
+    #             previous_bid.delete()
+    #             # transfer item to new owner from previous owner
+    #             item_to_transfer = auction.item
+    #             item_to_transfer.owner = user
+    #             item_to_transfer.save()
+    #             # delete current auction
+    #             auction.expired = True
+    #             auction.save()
+    #             return models.Bid.objects.create(
+    #                 auction_id=auction_id, bidder=user, **validated_data
+    #             )
