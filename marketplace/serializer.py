@@ -28,6 +28,18 @@ class ChangePasswordSerializer(serializers.Serializer):
         return value
 
 
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, email):
+        user = models.User.objects.filter(email=email).first()
+
+        if user is None:
+            raise serializers.ValidationError("Email doesn't exist")
+        self.context["first_name"] = user.first_name
+        return email
+
+
 # ######################################################
 
 
@@ -148,62 +160,3 @@ class AuctionUpdateSerializer(serializers.ModelSerializer):
             "price",
             "ends_at",
         ]
-
-    # def create(self, validated_data):
-    #     user = self.context["request"].user
-    #     auction_id = self.context["auction_id"]
-    #     new_bid = validated_data["bid_amount"]
-
-    #     previous_bid = models.Bid.objects.filter(auction_id=auction_id).first()
-    #     auction = get_object_or_404(models.Auction, pk=auction_id)
-
-    #     if previous_bid is None:
-    #         # # when bid amount of bidder is greater or  equal to price
-    #         print("previous_bid is none\n\n")
-    #         if auction.price <= validated_data["bid_amount"]:
-    #             print("auction price less or = to bid_amount \n\n")
-
-    #             item_to_transfer = auction.item
-    #             item_to_transfer.owner = user
-    #             item_to_transfer.save()
-    #             auction.expired = True
-    #             auction.save()
-    #             return models.Bid.objects.create(
-    #                 auction_id=auction_id, bidder=user, **validated_data
-    #             )
-    #         else:
-    #             print("auction price greater or = to bid_amount \n\n")
-    #             return models.Bid.objects.create(
-    #                 auction_id=auction_id, bidder=user, **validated_data
-    #             )
-
-    #     elif previous_bid is not None:
-    #         #  reject the current bid
-    #         print("previous vide is present\n\n")
-    #         if previous_bid.bid_amount >= new_bid:
-    #             print("previous bid amount in greater then new bid\n")
-    #             raise serializers.ValidationError(
-    #                 {"detail": "Bid amount must be higher than the current bid.\n"}
-    #             )
-    #             # delete prevous bid
-    #         elif previous_bid.bid_amount <= new_bid and new_bid < auction.price:
-    #             print("in between about \n\n")
-    #             previous_bid.delete()
-    #             #  transer item  to new_owner
-    #             return models.Bid.objects.create(
-    #                 auction_id=auction_id, bidder=user, **validated_data
-    #             )
-    #         else:
-    #             print("new bid is highter then price")
-    #             # delete previous bid
-    #             previous_bid.delete()
-    #             # transfer item to new owner from previous owner
-    #             item_to_transfer = auction.item
-    #             item_to_transfer.owner = user
-    #             item_to_transfer.save()
-    #             # delete current auction
-    #             auction.expired = True
-    #             auction.save()
-    #             return models.Bid.objects.create(
-    #                 auction_id=auction_id, bidder=user, **validated_data
-    #             )

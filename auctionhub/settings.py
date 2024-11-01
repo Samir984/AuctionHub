@@ -170,8 +170,32 @@ SIMPLE_JWT = {
 
 
 # Celery  Setting
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
-# CELERY_BROKER_URL = "redis://127.0.0.6369"
+
+# Mail Server Setting
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "sasuki984@gmail.com"  # Replace with your email address
+EMAIL_HOST_PASSWORD = "dqox kjte tmba svjf"  # Replace with your email password
+DEFAULT_FROM_EMAIL = (
+    "Auctionhub <sasuki984@gmail.com>"  # The default "from" email for your emails
+)
+
+# Redis for Catch configure
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",  # Use the appropriate Redis server URL
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
 
 
 # Custome auth path

@@ -14,8 +14,13 @@ urlpatterns = [
     path("register/", views.RegisterView.as_view(), name="register"),
     path("me/", views.MyDetailView.as_view(), name="my_detail"),
     path("test/", views.Test.as_view(), name="test"),
+    # path(
+    #     "reset_password/",
+    #     views.PasswordResetRequestView.as_view(),
+    #     name="reset_password",
+    # ),
     path(
-        "change_password/", views.ChangePasswordView.as_view(), name="change_password"
+        "forgot_password/", views.ForgotPasswordView.as_view(), name="forgot_password"
     ),
 ]
 

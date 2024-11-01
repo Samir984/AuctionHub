@@ -22,9 +22,15 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from marketplace.views import ResetPasswordView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path(
+        "account/reset_password/",
+        ResetPasswordView.as_view(),
+        name="reset_password",
+    ),
     path("api/", include("marketplace.urls")),
     path("api/login/", TokenObtainPairView.as_view(), name="login"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
