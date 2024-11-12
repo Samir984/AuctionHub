@@ -23,3 +23,7 @@ def send_reset_password_email(email, code, first_name):
     )
     email_message.attach_alternative(html_content, "text/html")
     email_message.send()
+
+
+# @shared_task
+# def 

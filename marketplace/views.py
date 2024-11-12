@@ -156,6 +156,7 @@ class AuctionViewSet(ModelViewSet):
 
 
 class BidViewSet(ModelViewSet):
+    
     http_method_names = ["post", "get"]
 
     serializer_class = BidSerializer

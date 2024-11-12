@@ -41,7 +41,7 @@ class ItemAdmin(admin.ModelAdmin):
 
 @admin.register(models.Auction)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ["item", "seller", "price", "expired"]
+    list_display = ["item", "seller", "starting_bid", "expired"]
 
 
 @admin.register(models.Bid)

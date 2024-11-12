@@ -55,11 +55,11 @@ class Item(models.Model):
 
 class Auction(models.Model):
     item = models.OneToOneField(Item, on_delete=models.CASCADE)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    starting_bid = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
     ends_at = models.DateTimeField()
     seller = models.ForeignKey(User, on_delete=models.CASCADE)
-    expired=models.BooleanField(default=False)
+    expired = models.BooleanField(default=False)
 
     def is_active(self):
         return self.ends_at > timezone.now()
