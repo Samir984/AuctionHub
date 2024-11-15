@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import PermissionDenied
+
 from . import models
 
 
@@ -44,9 +46,16 @@ class ForgotPasswordSerializer(serializers.Serializer):
 
 
 class ItemSerializer(serializers.ModelSerializer):
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        validated_data["owner"] = request.user
+        return super().create(validated_data)
+
     class Meta:
         model = models.Item
         fields = ["id", "title", "description", "created_at", "owner"]
+        extra_kwargs = {"owner": {"read_only": True}}
 
 
 class BidSerializer(serializers.ModelSerializer):
@@ -58,6 +67,9 @@ class BidSerializer(serializers.ModelSerializer):
 
         # Get the current auction and check if it exists
         auction = get_object_or_404(models.Auction, pk=auction_id)
+
+        if auction.seller == user:
+            raise PermissionDenied("Seller can't bid on own auction")
 
         # Get the highest previous bid for this auction
         previous_bid = models.Bid.objects.filter(auction_id=auction_id).first()
@@ -114,11 +126,17 @@ class AuctionSerializer(serializers.ModelSerializer):
         item = validated_data.pop("item_id")
         request = self.context.get("request")
 
+        # Check if the current user is the owner of the item
+        if item.owner.id != request.user.id:
+            raise PermissionDenied(
+                "You are not the owner of this item and cannot create an auction for it."
+            )
+
         validated_data["item"] = item
         validated_data["seller"] = request.user
+        print(validated_data)
 
-        print(request.user, "\n\n\n")
-        validated_data["seller"] = request.user  #
+        print(request.user, item, "\n\n\n")
         return super().create(validated_data)
 
     class Meta:

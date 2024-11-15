@@ -42,6 +42,9 @@ An online auction platform built with Django, Django REST Framework, Celery, and
    Ensure that Redis is installed and running. You can install it via package managers (e.g., `brew install redis` for macOS, `sudo apt install redis-server` for Ubuntu) and start the server:
     ```bash
     redis-server
+
+    # by docker
+    docker run -p 6379:6379 redis:7.0.5-alpine
     ```
 
 5. **Start Celery**  
@@ -74,23 +77,23 @@ This project uses **Celery** for handling background tasks, such as sending emai
 ## API Endpoints
 
 ### User Authentication
-- **`POST /register/`**: Register a new user
-- **`POST /login/`**: Log in a user
-- **`POST /forgot_password/`**: Request a password reset email
-- **`POST /reset_password/`**: Reset password using a verification code
+- **`POST ${BaseUrl}/api/register/`**: Register a new user
+- **`POST ${BaseUrl}/api/login/`**: Log in a user
+- **`POST ${BaseUrl}/api/change_password/`**: change the passw
+- **`POST ${BaseUrl}/api/forgot_password/`**: Request a password reset email and check the email to reset forgotted password
 
 ### Items
-- **`GET /items/`**: List all items
-- **`POST /items/`**: Create a new item (authenticated users only)
+- **`GET ${BaseUrl}/api/items/`**: List all items
+- **`POST ${BaseUrl}/api/items/`**: Create a new item (authenticated users only)
 
 ### Auctions
-- **`GET /auctions/`**: List all active auctions
-- **`POST /auctions/`**: Create a new auction (authenticated users only)
-- **`PATCH /auctions/<auction_id>/`**: Update auction details (owner only)
+- **`GET ${BaseUrl}/api/auctions/`**: List all active auctions
+- **`POST ${BaseUrl}/api/auctions/`**: Create a new auction (authenticated users only)
+- **`PATCH ${BaseUrl}/api/auctions/<auction_id>/`**: Update auction details (owner only)
 
 ### Bids
-- **`POST /auctions/<auction_id>/bid/`**: Place a bid on an auction
-- **`GET /auctions/<auction_id>/bid/`**: List all bids for an auction
+- **`POST ${BaseUrl}/api/auctions/<auction_id>/bid/`**: Place a bid on an auction
+- **`GET ${BaseUrl}/api/auctions/<auction_id>/bid/`**: List all bids for an auction
 
 ## Usage
 

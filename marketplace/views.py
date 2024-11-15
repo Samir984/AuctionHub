@@ -1,5 +1,4 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.http import HttpResponse
 from django.contrib import messages
@@ -18,7 +17,7 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.pagination import PageNumberPagination
-from .models import Item, Auction, Bid, User
+from .models import Item, Auction, Bid
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import views
 from rest_framework import generics
@@ -32,6 +31,9 @@ import time
 from django.core.cache import cache
 import random
 from .task import send_reset_password_email
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class RegisterView(generics.CreateAPIView):
@@ -44,7 +46,53 @@ class MyDetailView(generics.RetrieveAPIView):
     serializer_class = RegisterSerializer
 
     def get_object(self):
-        return self.request.userme
+        return self.request.user
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User  # Adjust if using a custom user model
+
+
+class CustomLoginView(APIView):
+    def post(self, request):
+        # Extract email and password from the request
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        if not email or not password:
+            return Response(
+                {"detail": "Email and password are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Authenticate the user
+        user = authenticate(request, username=email, password=password)
+
+        if user is None:
+            raise AuthenticationFailed("Invalid email or password.")
+
+        if not user.is_active:
+            return Response(
+                {"detail": "This account is inactive."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Generate tokens using SimpleJWT
+        refresh = RefreshToken.for_user(user)
+
+        # Return tokens in the response
+        return Response(
+            {
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class ChangePasswordView(generics.CreateAPIView):
@@ -55,10 +103,19 @@ class ChangePasswordView(generics.CreateAPIView):
         return {"request": self.request}
 
     def perform_create(self, serializer):
+        # Perform the password change logic
         user = self.request.user
-        print(serializer.validated_data)
         user.set_password(serializer.validated_data["new_password"])
         user.save()
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        print("i am called second2")
+
+        return Response(
+            {"detail": "Password has been changed successfully"},
+            status=response.status_code,
+        )
 
 
 class ForgotPasswordView(views.APIView):
@@ -79,12 +136,21 @@ class ForgotPasswordView(views.APIView):
         )
 
 
-class ResetPasswordView(views.APIView):
+from django.contrib.auth import get_user_model
+from django.shortcuts import render, redirect
+from django.core.cache import cache
+from django.contrib import messages
+from django.http import HttpResponse
+from .forms import ResetPasswordForm
+
+User = get_user_model()  # Always use this to refer to your custom user model
+
+
+class ResetPasswordTemplateView(views.APIView):
     template_name = "reset_password.html"
 
     def get(self, request):
         code = request.query_params.get("code")  # Accessing code from query parameters
-        print("\n\n\n\n code", code)
         if not code:
             return HttpResponse({"detail": "invalid reset link"}, status=400)
 
@@ -119,7 +185,7 @@ class ResetPasswordView(views.APIView):
             user.save()
 
             # Invalidate the used code
-            cache.delete(f"otp:{code}")
+            cache.delete(f"code:{code}")
             messages.success(request, "Your password has been reset successfully.")
             return redirect("login")  # Replace with your login URL
 
@@ -130,7 +196,7 @@ class ResetPasswordView(views.APIView):
 
 
 class ItemViewSet(ModelViewSet):
-    # permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = Item.objects.select_related("owner").all()
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ["owner"]
@@ -138,11 +204,14 @@ class ItemViewSet(ModelViewSet):
     ordering_fields = ["created_at"]
     pagination_class = PageNumberPagination
 
+    def get_serializer_context(self):
+        return {"request": self.request}
+
     serializer_class = ItemSerializer
 
 
 class AuctionViewSet(ModelViewSet):
-    # permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = Auction.objects.prefetch_related("item", "bid").filter(expired=False)
 
     def get_serializer_class(self):
@@ -156,7 +225,8 @@ class AuctionViewSet(ModelViewSet):
 
 
 class BidViewSet(ModelViewSet):
-    
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     http_method_names = ["post", "get"]
 
     serializer_class = BidSerializer
