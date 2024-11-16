@@ -30,7 +30,7 @@ from rest_framework.permissions import (
 import time
 from django.core.cache import cache
 import random
-from .task import send_reset_password_email
+from .tasks import send_reset_password_email
 from django.contrib.auth import get_user_model
 
 User = get_user_model()

@@ -54,7 +54,9 @@ class Item(models.Model):
 
 
 class Auction(models.Model):
-    item = models.OneToOneField(Item, on_delete=models.CASCADE)
+    # a auction can only belong to one time , but I have to made this field  foreign because expired auction also remain here
+    #  i will make sure one unexpired auction in there for one item from serializer while creating
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
     starting_bid = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
     ends_at = models.DateTimeField()

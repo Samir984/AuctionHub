@@ -39,11 +39,15 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    #
+    "marketplace",
+    #
     "debug_toolbar",
     "corsheaders",
     "rest_framework",
     "django_filters",
-    "marketplace",
+    "django_celery_beat",
+    "django_celery_results",
 ]
 
 MIDDLEWARE = [
@@ -122,11 +126,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "Asia/Kathmandu"
-
-USE_I18N = True
-
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
@@ -172,6 +172,11 @@ SIMPLE_JWT = {
 # Celery  Setting
 CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_RESULT_EXTENDED = True
+CELERY_TIMEZONE = "Asia/Kathmandu"
+# Celery Beat
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
 
 # Mail Server Setting

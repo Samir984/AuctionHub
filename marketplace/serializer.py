@@ -66,8 +66,9 @@ class BidSerializer(serializers.ModelSerializer):
         new_bid = validated_data["bid_amount"]
 
         # Get the current auction and check if it exists
-        auction = get_object_or_404(models.Auction, pk=auction_id)
+        auction = get_object_or_404(models.Auction, pk=auction_id, expired=False)
 
+        #  auction creater cannot bid own auction
         if auction.seller == user:
             raise PermissionDenied("Seller can't bid on own auction")
 
@@ -116,7 +117,7 @@ class AuctionSerializer(serializers.ModelSerializer):
     def validate_item_id(self, value):
         request = self.context["request"]
         if request.method == "POST":
-            if models.Auction.objects.filter(item_id=value).exists():
+            if models.Auction.objects.filter(item_id=value, expired=False).exists():
                 raise serializers.ValidationError(
                     "An auction for this item already exists."
                 )
@@ -134,9 +135,7 @@ class AuctionSerializer(serializers.ModelSerializer):
 
         validated_data["item"] = item
         validated_data["seller"] = request.user
-        print(validated_data)
 
-        print(request.user, item, "\n\n\n")
         return super().create(validated_data)
 
     class Meta:
