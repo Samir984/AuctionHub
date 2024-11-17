@@ -51,7 +51,8 @@ An online auction platform built with Django, Django REST Framework, Celery, and
 5. **Start Celery**  
    Open a new terminal and run Celery with the Redis broker:
     ```bash
-    celery -A auction_platform worker -l info
+    celery -A auctionhub worker -l info
+    celery -A auctionhub  beat  --loglevel=info
     ```
 
 6. **Run the Server**
