@@ -13,6 +13,17 @@ from .serializer import (
     BidSerializer,
     ForgotPasswordSerializer,
 )
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User  # Adjust if using a custom user model
+
+
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -47,16 +58,6 @@ class MyDetailView(generics.RetrieveAPIView):
 
     def get_object(self):
         return self.request.user
-
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.exceptions import AuthenticationFailed
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import authenticate
-from django.contrib.auth.models import User  # Adjust if using a custom user model
-
 
 class CustomLoginView(APIView):
     def post(self, request):
