@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "marketplace",
     #
     "debug_toolbar",
+    "django_extensions",
     "corsheaders",
     "rest_framework",
     "django_filters",

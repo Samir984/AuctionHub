@@ -21,58 +21,69 @@ An online auction platform built with Django, Django REST Framework, Celery, and
 - **Item Transfer**: Auction items can be transferred between users once an auction is completed successfully.
 - **Email Notifications**: Automatic email notifications for auction updates, bid confirmations, and auction reminders.
 
+## ER Diagram
+
+![ER diagram](ER_DIAGRAM.svg)
+
 ## Installation
 
 1. **Clone the Repository**
-    ```bash
-    git clone <repo link>
-    cd AuctionHub
-    ```
+
+   ```bash
+   git clone <repo link>
+   cd AuctionHub
+   ```
 
 2. **Install Dependencies**
-    ```bash
-    pip install -r requirements.txt
-    ```
+
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 3. **Run Migrations**
-    ```bash
-    python manage.py migrate
-    ```
+
+   ```bash
+   python manage.py migrate
+   ```
 
 4. **Set Up Redis**  
    Ensure that Redis is installed and running. You can install it via package managers (e.g., `brew install redis` for macOS, `sudo apt install redis-server` for Ubuntu) and start the server:
-    ```bash
-    redis-server
 
-    # by docker
-    docker run -p 6379:6379 redis:7.0.5-alpine
-    ```
+   ```bash
+   redis-server
+
+   # by docker
+   docker run -p 6379:6379 redis:7.0.5-alpine
+   ```
 
 5. **Start Celery**  
    Open a new terminal and run Celery with the Redis broker:
-    ```bash
-    celery -A auctionhub worker -l info
-    celery -A auctionhub  beat  --loglevel=info
-    ```
+
+   ```bash
+   celery -A auctionhub worker -l info
+   celery -A auctionhub  beat  --loglevel=info
+   ```
 
 6. **Run the Server**
-    ```bash
-    python manage.py runserver
-    ```
+   ```bash
+   python manage.py runserver
+   ```
 
 ## Celery & Redis Integration
 
 This project uses **Celery** for handling background tasks, such as sending email notifications for password resets and auction-related reminders. **Redis** acts as the message broker for Celery to manage task queues and results.
 
 ### Setting Up Celery
+
 - **Install Celery and Redis**:
-    ```bash
-    pip install celery redis
-    ```
-- **Configuration**: Celery and Redis configurations are set in Django’s `settings.py` file. 
+  ```bash
+  pip install celery redis
+  ```
+- **Configuration**: Celery and Redis configurations are set in Django’s `settings.py` file.
 - **Running Celery**: After setting up Redis, start a Celery worker to listen for tasks, as shown in step 5 above.
 
 ### Background Tasks
+
 - **Password Reset**: Celery handles email notifications for password reset requests.
 - **Auction Notifications**: Set automated reminders and notifications for auction events.
 - **Item Transfer Notifications**: Notifications when items are successfully transferred to the winning bidder.
@@ -80,28 +91,33 @@ This project uses **Celery** for handling background tasks, such as sending emai
 ## API Endpoints
 
 ### User Authentication
+
 - **`POST ${BaseUrl}/api/register/`**: Register a new user
 - **`POST ${BaseUrl}/api/login/`**: Log in a user
 - **`POST ${BaseUrl}/api/change_password/`**: Change the password
 - **`POST ${BaseUrl}/api/forgot_password/`**: Request a password reset email and check the email to reset forgotten password
 
 ### Items
+
 - **`GET ${BaseUrl}/api/items/`**: List all items
 - **`POST ${BaseUrl}/api/items/`**: Create a new item (authenticated users only)
 - **`PATCH ${BaseUrl}/api/items/<item_id>/`**: Update item details (owner only)
 - **`DELETE ${BaseUrl}/api/items/<item_id>/`**: Delete an item (owner only)
 
 ### Auctions
+
 - **`GET ${BaseUrl}/api/auctions/`**: List all active auctions
 - **`POST ${BaseUrl}/api/auctions/`**: Create a new auction (authenticated users only)
 - **`PATCH ${BaseUrl}/api/auctions/<auction_id>/`**: Update auction details (owner only)
 - **`DELETE ${BaseUrl}/api/auctions/<auction_id>/`**: Cancel an auction (owner only)
 
 ### Bids
+
 - **`POST ${BaseUrl}/api/auctions/<auction_id>/bid/`**: Place a bid on an auction
 - **`GET ${BaseUrl}/api/auctions/<auction_id>/bid/`**: List all bids for an auction
 
 ### Item Transfer
+
 - **`POST ${BaseUrl}/api/auctions/<auction_id>/complete/`**: Transfer the item to the winner (completed auction)
 - **`GET ${BaseUrl}/api/items/transfer/`**: View items that have been transferred
 
